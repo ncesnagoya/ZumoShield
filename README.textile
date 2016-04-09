@@ -1,6 +1,6 @@
 h1. Pololu Zumo Shield Libraries(Modified)
 
-This Libraries is based on "Pololu Zumo Shield Libraries" :https://github.com/pololu/zumo-shield. 
+This Libraries is based on "Pololu Zumo Shield Libraries":https://github.com/pololu/zumo-shield. 
 
 Version: 1.2.3
 Release Date: 2013-11-27
