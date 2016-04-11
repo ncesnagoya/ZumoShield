@@ -1,11 +1,11 @@
 #include <Wire.h>
 #include <ZumoShield.h>
 
+int led_state = 0;
+
 void setup() {
   
 }
-
-int led_state = 0;
 
 void loop() {
   button.waitForPress();
