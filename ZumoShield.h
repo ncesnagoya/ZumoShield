@@ -1,4 +1,4 @@
-#include <ZumoBuzzer.h>
+﻿#include <ZumoBuzzer.h>
 #include <ZumoMotors.h>
 #include <Pushbutton.h>
 #include <QTRSensors.h>
@@ -8,6 +8,8 @@
 #include <L3G.h>
 #include <RunningAverage.h>
 #include <Accelerometer.h>
+
+extern ZumoMotors  motors;
 
 template <typename T> float heading(LSM303::vector<T> v, LSM303 *compass)
 {
@@ -23,6 +25,9 @@ template <typename T> float heading(LSM303::vector<T> v, LSM303 *compass)
 #define CRB_REG_M_2_5GAUSS 0x60 // CRB_REG_M value for magnetometer +/-2.5 gauss full scale
 #define CRA_REG_M_220HZ    0x1C // CRA_REG_M value for magnetometer 220 Hz update rate
 
+#define SPEED           200
+#define CALIBRATION_SAMPLES 70
+
 class ZumoCompass : public LSM303
 {
   public:
@@ -37,12 +42,45 @@ class ZumoCompass : public LSM303
 		writeReg(LSM303::CRA_REG_M, CRA_REG_M_220HZ);    // 220 Hz compass update rate  
   
 		// Set calibrated values to compass.m_max and compass.m_min
-		m_max.x = -447;
-		m_max.y = -673;
-		m_min.x = -2252;
-		m_min.y = -2511; 
+		m_max.x = 4156;
+		m_max.y = -838;
+		m_min.x = 2203;
+		m_min.y = -3406; 
 	};
-	
+
+	void setCalibration(int m_max_x, int m_max_y, int m_min_x, int m_min_y) {
+		m_max.x = m_max_x;
+		m_max.y = m_max_y;
+		m_min.x = m_min_x;
+		m_min.y = m_min_y;
+	}
+
+	void doCalibration(void) {
+		LSM303::vector<int16_t> running_min = {32767, 32767, 32767}, running_max = {-32767, -32767, -32767};
+		unsigned char index;
+
+		motors.setLeftSpeed(SPEED);
+		motors.setRightSpeed(-SPEED);
+
+		for(index = 0; index < CALIBRATION_SAMPLES; index ++) {
+			// Take a reading of the magnetic vector and store it in compass.m
+			read();
+
+			running_min.x = min(running_min.x, m.x);
+			running_min.y = min(running_min.y, m.y);
+
+			running_max.x = max(running_max.x, m.x);
+			running_max.y = max(running_max.y, m.y);
+
+			delay(50);
+		}
+
+		motors.setLeftSpeed(0);
+		motors.setRightSpeed(0);
+
+		setCalibration(running_min.x, running_min.y, running_max.x, running_max.y);
+	}
+
 	float averageHeading() {
 		LSM303::vector<int32_t> avg = {0, 0, 0};
 
@@ -220,6 +258,6 @@ ZumoReflectanceSensorArray2 reflectances;
 Pushbutton  button(ZUMO_BUTTON);
 ZumoLED     led;
 ZumoBuzzer2 buzzer;
-ZumoMotors  motors;
 ZumoCompass compass;
 ZumoGyro    gyro;
+ZumoMotors  motors;
