@@ -8,6 +8,7 @@
 #include <L3G.h>
 #include <RunningAverage.h>
 #include <Accelerometer.h>
+#include <ZumoIMU.h>
 
 extern ZumoMotors  motors;
 
@@ -261,3 +262,4 @@ ZumoBuzzer2 buzzer;
 ZumoCompass compass;
 ZumoGyro    gyro;
 ZumoMotors  motors;
+ZumoIMU		imu;
